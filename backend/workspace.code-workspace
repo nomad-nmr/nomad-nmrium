@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../frontend/node_modules/nmrium"
+		},
+		{
+			"path": "../../nmrium"
+		}
+	],
+	"settings": {}
+}

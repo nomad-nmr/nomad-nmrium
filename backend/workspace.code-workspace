@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../../nmrium"
+		},
+		{
+			"path": "../../NMRconversion"
 		}
 	],
 	"settings": {}

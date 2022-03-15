@@ -9,24 +9,28 @@ const PORT = process.env.PORT || 3001;
 
 const app = express();
 
-
 app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
 app.use(bodyParser.json({ limit: '50mb' }))
 app.use(cors());
 
+//Reads file from filesystem and returns a JSON string;
 const fileread = (filePath) => {
-  const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
-  return data;
-}     
+  try {
+    const data = fs.readFileSync(filePath, "utf8", function (err) {
+      if (err) { throw err }
+      res.status(200).json({
+        message: "File successfully read"
+      })
+    })
+    return JSON.parse(data);
+  }
+  catch (error) {
+    res.status(400).json({ message: "Failed to read file" });
+    console.error(error.message);
+  }
+}
 
-app.get("/", (req, res) => {
-  res.json({ message: "Hello from WWW!" });
-});
-
-// const data1 = require("../data/1.json");
-// const data2 = require("../data/2.json");
-// const data3 = require("../data/3.json");
-
+//Static paths to json files however would use router with request header.
 app.get("/1", (req, res) => {
   const data1 = fileread("./data/1.json");
   console.log(data1);
@@ -43,23 +47,24 @@ app.get("/3", (req, res) => {
   res.json(data3);
 });
 
-app.post("/save", (req,res) => {
-  try{
-  filePath = "data/2.json";
-  //const response = req
-  const data = JSON.stringify(req.body);
-  //console.log("CONSOLE LOG DATA "+ data);
-  fs.writeFile(filePath, data, function(err) {
-		if (err) { throw err }
-		res.status(200).json({
-			message: "File successfully written"
-		})
+//save endpoint
+//uses static path so saving only updates for spectra 2
+app.post("/save", (req, res) => {
+  try {
+    //take the id from the header to determine path
+    filePath = "data/2.json";
+    const data = JSON.stringify(req.body);
+    fs.writeFile(filePath, data, function (err) {
+      if (err) { throw err }
+      res.status(200).json({
+        message: "File successfully written"
+      })
     })
   }
- catch (error) {
-   res.status(400).json({message: "Failed"});
-  console.error(error.message);
- }
+  catch (error) {
+    res.status(400).json({ message: "Failed to write file" });
+    console.error(error.message);
+  }
 
 });
 

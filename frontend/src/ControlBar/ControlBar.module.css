@@ -1,0 +1,25 @@
+.Container {
+  height: 5vh;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.Container button {
+  background-color: #1890ff;
+  color: white;
+  height: 35px;
+  border: 0;
+  padding: 0 15px 0 15px;
+  border-radius: 3px;
+}
+
+.Container button:hover {
+  background-color: #69c0ff;
+  cursor: pointer;
+}
+
+.SelectContainer {
+  max-width: 100 px;
+}

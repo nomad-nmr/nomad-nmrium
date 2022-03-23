@@ -4,7 +4,6 @@ import classes from './ControlBar.module.css'
 
 const ControlBar = props => {
   const { saving, loading } = props
-  console.log(classes)
   return (
     <div className={classes.Container}>
       <div className={classes.SelectContainer}>

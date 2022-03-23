@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import NMRium from 'nmrium'
-import axios from 'axios'
+import axios from '../axios-instance'
 import { SpinnerDotted } from 'spinners-react'
 
 import ControlBar from './ControlBar/ControlBar'
@@ -13,18 +13,20 @@ function App() {
   const [value, setValue] = useState(1)
   const [changedData, setChangedData] = useState()
 
+  const expIds = new URLSearchParams(window.location.search).get('expIds')
+
   useEffect(() => {
-    fetchData(value)
-  }, [value])
+    fetchData(expIds ? expIds.split(',') : [])
+  }, [])
 
   //fetch json nmrium file from backend.
-  const fetchData = async value => {
+  const fetchData = async exps => {
     setLoading(true)
-
     try {
-      const { data: response } = await axios.get('http://localhost:3001/' + value)
+      const { data: response } = await axios.get(
+        '/data/nmrium/?' + new URLSearchParams({ exps }).toString()
+      )
       setData(response)
-      console.log(response.spectra)
     } catch (error) {
       console.error(error.message)
     }
@@ -37,7 +39,7 @@ function App() {
     try {
       const newData = updateData()
       console.log(newData)
-      await axios.post('http://localhost:3001/save', newData)
+      await axios.put('/data/nmrium', newData)
     } catch (error) {
       console.error(error.message)
     }
@@ -61,10 +63,10 @@ function App() {
   }
 
   //onDataChange handles nmrium callback by updating new data
-  const changeHandler = useCallback(dataUpdate => {
+  const changeHandler = dataUpdate => {
     console.log(dataUpdate)
     setChangedData(dataUpdate.data)
-  }, [])
+  }
 
   return (
     <div>

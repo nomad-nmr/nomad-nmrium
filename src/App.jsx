@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import NMRium from 'nmrium'
 import axios from '../axios-instance'
 import { SpinnerDotted } from 'spinners-react'
@@ -8,10 +8,9 @@ import ControlBar from './ControlBar/ControlBar'
 import classes from './App.module.css'
 
 function App() {
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [data, setData] = useState({ spectra: [] })
-  const [value, setValue] = useState(1)
-  const [changedData, setChangedData] = useState()
+  const [changedData, setChangedData] = useState({})
 
   const expIds = new URLSearchParams(window.location.search).get('expIds')
 
@@ -27,6 +26,7 @@ function App() {
         '/data/nmrium/?' + new URLSearchParams({ exps }).toString()
       )
       setData(response)
+      console.log(response)
     } catch (error) {
       console.error(error.message)
     }
@@ -36,43 +36,43 @@ function App() {
   //Save current spectra /save endpoint (needs to pass experiment id in header)
   const saveData = async () => {
     setLoading(true)
+
     try {
-      const newData = updateData()
-      console.log(newData)
-      await axios.put('/data/nmrium', newData)
+      await axios.put('/data/nmrium', changedData)
     } catch (error) {
       console.error(error.message)
     }
     setLoading(false)
   }
 
-  //returns updated spectra
-  const updateData = () => {
-    const objCount = changedData.length
-    for (var x = 0; x < objCount; x++) {
-      const updatedSpectra = changedData[x]
-      data.spectra[x] = updatedSpectra
-    }
-    return data
-  }
-
-  //On dropdown list change, update id value and fetch spectra
-  const onChange = e => {
-    setValue(e.target.value)
-    fetchData(e.target.value)
-  }
-
-  //onDataChange handles nmrium callback by updating new data
-  const changeHandler = dataUpdate => {
+  //Handler for updating state after change inside of NMRium component
+  const changeHandler = useCallback(dataUpdate => {
     console.log(dataUpdate)
-    setChangedData(dataUpdate.data)
-  }
+    if (dataUpdate.data.length > 0) {
+      const newSpectra = dataUpdate.data.map(i => ({ ...i }))
+
+      //setting data to originalData to enable correct ppm scale referencing after reload of spectra
+      //and removing originalData to reduce size of saved .nmrium file
+      const newData = {
+        spectra: newSpectra.map(j => {
+          if (j.originalData) {
+            j.data = j.originalData
+            delete j.originalData
+            delete j.originalInfo
+          }
+          return j
+        })
+      }
+      console.log(newData)
+      setChangedData(newData)
+    }
+  }, [])
 
   return (
     <div>
-      <ControlBar changeHandler={onChange} datasetId={value} saveDataHandler={saveData} />
+      <ControlBar saveDataHandler={saveData} />
       <div className={classes.NMRiumContainer}>
-        <NMRium data={data} onDataChange={changeHandler} />
+        {data.spectra.length !== 0 && <NMRium data={data} onDataChange={changeHandler} />}
       </div>
       {loading && (
         <div className={classes.Overlay}>

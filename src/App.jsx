@@ -11,8 +11,10 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [data, setData] = useState({ spectra: [] })
   const [changedData, setChangedData] = useState({})
+  const [errorMessage, setErrorMessage] = useState(null)
 
   const expIds = new URLSearchParams(window.location.search).get('expIds')
+  const authToken = new URLSearchParams(window.location.search).get('token')
 
   useEffect(() => {
     fetchData(expIds ? expIds.split(',') : [])
@@ -23,11 +25,15 @@ function App() {
     setLoading(true)
     try {
       const { data: response } = await axios.get(
-        '/data/nmrium/?' + new URLSearchParams({ exps }).toString()
+        '/data/nmrium/?' + new URLSearchParams({ exps }).toString(),
+        {
+          headers: { Authorization: 'Bearer ' + authToken }
+        }
       )
       setData(response)
       console.log(response)
     } catch (error) {
+      setErrorMessage(error.message)
       console.error(error.message)
     }
     setLoading(false)
@@ -38,8 +44,11 @@ function App() {
     setLoading(true)
 
     try {
-      await axios.put('/data/nmrium', changedData)
+      await axios.put('/data/nmrium', changedData, {
+        headers: { Authorization: 'Bearer ' + authToken }
+      })
     } catch (error) {
+      setErrorMessage(error.message)
       console.error(error.message)
     }
     setLoading(false)
@@ -48,6 +57,8 @@ function App() {
   //Handler for updating state after change inside of NMRium component
   const changeHandler = useCallback(dataUpdate => {
     console.log(dataUpdate)
+    //const newData = {spectra: [...dataUpdate.data]}
+
     if (dataUpdate.data.length > 0) {
       const newSpectra = dataUpdate.data.map(i => ({ ...i }))
 
@@ -68,11 +79,33 @@ function App() {
     }
   }, [])
 
+  const nmriumPreferences = {
+    general: {
+      hideGeneralSettings: true
+    },
+    //panels config does not seem to work in version 0.23.0
+    panels: {
+      predictionPanel: { display: false, hidden: true },
+      structuresPanel: { display: false, hidden: true }
+    },
+    toolBarButtons: { hideImport: true }
+  }
+
+  const errorMessageEl = <div className={classes.Error}>{errorMessage}</div>
+
   return (
     <div>
       <ControlBar saveDataHandler={saveData} />
       <div className={classes.NMRiumContainer}>
-        {data.spectra.length !== 0 && <NMRium data={data} onDataChange={changeHandler} />}
+        {data.spectra.length !== 0 && !errorMessage ? (
+          <NMRium
+            data={data}
+            onDataChange={changeHandler}
+            emptyText=''
+            preferences={nmriumPreferences}
+          />
+        ) : null}
+        {errorMessage && errorMessageEl}
       </div>
       {loading && (
         <div className={classes.Overlay}>

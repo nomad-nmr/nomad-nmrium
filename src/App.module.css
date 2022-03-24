@@ -1,5 +1,5 @@
 .NMRiumContainer {
-  height: 95vh;
+  height: 94.5vh;
 }
 
 .Overlay {
@@ -15,4 +15,12 @@
   cursor: pointer;
   display: flex;
   justify-content: center;
+}
+
+.Error {
+  color: red;
+  font-weight: 800;
+  display: flex;
+  justify-content: center;
+  margin-top: 300px;
 }

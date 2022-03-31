@@ -85,8 +85,8 @@ function App() {
     },
     //panels config does not seem to work in version 0.23.0
     panels: {
-      predictionPanel: { display: false, hidden: true },
-      structuresPanel: { display: false, hidden: true }
+      predictionPanel: { display: false },
+      structuresPanel: { display: false }
     },
     toolBarButtons: { hideImport: true }
   }
@@ -103,6 +103,7 @@ function App() {
             onDataChange={changeHandler}
             emptyText=''
             preferences={nmriumPreferences}
+            workspace='default'
           />
         ) : null}
         {errorMessage && errorMessageEl}

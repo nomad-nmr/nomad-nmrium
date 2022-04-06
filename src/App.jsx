@@ -83,10 +83,10 @@ function App() {
     general: {
       hideGeneralSettings: true
     },
-    //panels config does not seem to work in version 0.23.0
     panels: {
-      predictionPanel: { display: false },
-      structuresPanel: { display: false }
+      hideStructuresPanel: true,
+      hideSummaryPanel: true,
+      hideExperimentalFeatures: true
     },
     toolBarButtons: { hideImport: true }
   }

@@ -57,21 +57,25 @@ function App() {
   //Handler for updating state after change inside of NMRium component
   const changeHandler = useCallback(dataUpdate => {
     console.log(dataUpdate)
-    //const newData = {spectra: [...dataUpdate.data]}
 
-    if (dataUpdate.data.length > 0) {
-      const newSpectra = dataUpdate.data.map(i => ({ ...i }))
+    if (dataUpdate.spectra.length > 0) {
+      const newSpectra = dataUpdate.spectra.map(i => ({ ...i }))
 
-      //setting data to originalData to enable correct ppm scale referencing after reload of spectra
-      //and removing originalData to reduce size of saved .nmrium file
+      // from v 0.28.0 data structure of dataUpdate (object that onDataChange CB returns) has changed
+      // 1D spectra.data arrays have Float64Array format
+      // corresponding arrays (im, re , x) have to be converted in ordinary arrays
+      // otherwise saved .nmrium file does not open correctly
+
       const newData = {
         spectra: newSpectra.map(j => {
-          if (j.originalData) {
-            j.data = j.originalData
-            delete j.originalData
-            delete j.originalInfo
+          const newDataObj = { ...j.data }
+
+          if (j.info.dimension === 1) {
+            newDataObj.im = Array.from(j.data.im)
+            newDataObj.re = Array.from(j.data.re)
+            newDataObj.x = Array.from(j.data.x)
           }
-          return j
+          return { ...j, data: newDataObj }
         })
       }
       console.log(newData)
